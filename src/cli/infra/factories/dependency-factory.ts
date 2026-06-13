@@ -8,10 +8,16 @@ import { InitCommandGroupDependencies } from '@/cli/infra/commands/init/index';
 import { FrontendCommandGroupDependencies } from '@/cli/infra/commands/frontend/index';
 import { CurlCommandGroupDependencies } from '@/cli/infra/commands/curl/index';
 import { CacheCommandGroupDependencies } from '@/cli/infra/commands/cache/index';
+import { WsCommandGroupDependencies } from '@/cli/infra/commands/ws/index';
+import { PushCommandGroupDependencies } from '@/cli/infra/commands/push/index';
+import { ProjectCommandGroupDependencies } from '@/cli/infra/commands/project/index';
+import { BriefCommandGroupDependencies } from '@/cli/infra/commands/brief/index';
+import { ApiCommandGroupDependencies } from '@/cli/infra/commands/api/index';
+import { DevCommandGroupDependencies } from '@/cli/infra/commands/dev/index';
+import { CloudCommandGroupDependencies } from '@/cli/infra/commands/cloud/index';
 
 /**
  * Factory interface for creating command group dependencies
- * Enables different dependency configurations for production and development modes
  */
 export interface DependencyFactory {
   createSiteCommandGroupDependencies(): SiteCommandGroupDependencies;
@@ -24,4 +30,11 @@ export interface DependencyFactory {
   createFrontendCommandGroupDependencies(): FrontendCommandGroupDependencies;
   createCurlCommandGroupDependencies(): CurlCommandGroupDependencies;
   createCacheCommandGroupDependencies(): CacheCommandGroupDependencies;
+  createWsCommandGroupDependencies(): WsCommandGroupDependencies;
+  createPushCommandGroupDependencies(): PushCommandGroupDependencies;
+  createProjectCommandGroupDependencies(): ProjectCommandGroupDependencies;
+  createBriefCommandGroupDependencies(): BriefCommandGroupDependencies;
+  createApiCommandGroupDependencies(): ApiCommandGroupDependencies;
+  createDevCommandGroupDependencies(): DevCommandGroupDependencies;
+  createCloudCommandGroupDependencies(): CloudCommandGroupDependencies;
 }

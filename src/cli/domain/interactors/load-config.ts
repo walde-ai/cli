@@ -10,7 +10,8 @@ import { getCurrentStage } from '@/cli/infra/commands/common-options';
  */
 export class LoadConfig implements ILoadConfig {
   constructor(
-    private readonly credentialsRepos: CredentialsRepo[]
+    private readonly credentialsRepos: CredentialsRepo[],
+    private readonly endpointOverride?: string
   ) {}
 
   /**
@@ -19,7 +20,8 @@ export class LoadConfig implements ILoadConfig {
    */
   public async execute(stage?: string): Promise<Config> {
     const effectiveStage = stage !== undefined ? stage : getCurrentStage();
-    const settings = WaldeAdminConfigFactory.create({}, effectiveStage);
+    const providedConfig = this.endpointOverride ? { endpoint: this.endpointOverride } : {};
+    const settings = WaldeAdminConfigFactory.create(providedConfig, effectiveStage);
     const credentials = await this.loadCredentials();
     
     return new Config(settings, credentials);

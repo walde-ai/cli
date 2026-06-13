@@ -1,20 +1,19 @@
 import { Command } from 'commander';
 
-import { CredentialsProvider } from '@walde.ai/sdk';
-import { FileWorkspaceConfigRepo } from '@walde.ai/sdk';
+import { CredentialsProvider, FileWorkspaceConfigRepo } from '@walde.ai/sdk';
 import { CommandAssetPush } from '@/cli/domain/interactors/command-asset-push';
 import { CommandAssetPushAll } from '@/cli/domain/interactors/command-asset-push-all';
-import { ResolveSiteId } from '@/cli/domain/interactors/resolve-site-id';
-import { Runtime } from '@/cli/infra/runtime';
+import { ResolveTarget, IProjectRepository } from '@/cli/domain/interactors/resolve-target';
 import { UserError } from '@/cli/domain/exceptions';
+import { Runtime } from '@/cli/infra/runtime';
 import { ILoadConfig } from '@/cli/domain/ports/in/i-load-config';
 import { IAssetPresenter } from '@/cli/domain/ports/presenters/i-asset-presenter';
-import { applyWorkspaceStage } from '../common-options';
 
 export type AssetPushDependencies = {
   credentialsProvider: CredentialsProvider;
   configLoader: ILoadConfig;
   presenter: IAssetPresenter;
+  projectRepository: IProjectRepository;
 };
 
 /**
@@ -30,18 +29,21 @@ export function createAssetPushCommand(deps: AssetPushDependencies): Command {
     .option('--key <key>', 'Asset key (S3 path under assets/ prefix)')
     .option('--path <assetsPath>', 'Path to the assets directory (used with --all)')
     .option('--site-id <siteId>', 'Site identifier')
+    .option('--target <stageName>', 'Project stage to deploy to (default: prod)')
     .option('--no-cache-invalidation', 'Skip automatic CloudFront cache invalidation after upload')
-    .action(async (file: string | undefined, options: { all?: boolean; key?: string; path?: string; siteId?: string; cacheInvalidation?: boolean }) => {
+    .action(async (file: string | undefined, options: { all?: boolean; key?: string; path?: string; siteId?: string; target?: string; cacheInvalidation?: boolean }) => {
       if (options.all) {
         await executeAssetPushAll(deps, {
           path: options.path,
           siteId: options.siteId,
+          target: options.target,
           noCacheInvalidation: options.cacheInvalidation === false
         });
       } else if (file) {
         await executeAssetPush(deps, file, {
           key: options.key,
           siteId: options.siteId,
+          target: options.target,
           noCacheInvalidation: options.cacheInvalidation === false
         });
       } else {
@@ -52,44 +54,38 @@ export function createAssetPushCommand(deps: AssetPushDependencies): Command {
   return command;
 }
 
-async function executeAssetPush(deps: AssetPushDependencies, file: string, options: { key?: string; siteId?: string; noCacheInvalidation?: boolean }): Promise<void> {
+async function executeAssetPush(deps: AssetPushDependencies, file: string, options: { key?: string; siteId?: string; target?: string; noCacheInvalidation?: boolean }): Promise<void> {
   const runtime = new Runtime();
   await runtime.run(async () => {
     const workspaceConfigRepo = new FileWorkspaceConfigRepo();
-    const workspaceConfig = await workspaceConfigRepo.findWorkspace();
-    applyWorkspaceStage(workspaceConfig?.stage);
-
-    const resolveSiteId = new ResolveSiteId();
+    const resolveTarget = new ResolveTarget(deps.projectRepository);
 
     const commandAssetPush = new CommandAssetPush(
       deps.credentialsProvider,
       deps.presenter,
       workspaceConfigRepo,
-      resolveSiteId,
+      resolveTarget,
       deps.configLoader
     );
 
-    await commandAssetPush.execute({ filePath: file, key: options.key, siteId: options.siteId, noCacheInvalidation: options.noCacheInvalidation });
+    await commandAssetPush.execute({ filePath: file, key: options.key, siteId: options.siteId, target: options.target, noCacheInvalidation: options.noCacheInvalidation });
   });
 }
 
-async function executeAssetPushAll(deps: AssetPushDependencies, options: { path?: string; siteId?: string; noCacheInvalidation?: boolean }): Promise<void> {
+async function executeAssetPushAll(deps: AssetPushDependencies, options: { path?: string; siteId?: string; target?: string; noCacheInvalidation?: boolean }): Promise<void> {
   const runtime = new Runtime();
   await runtime.run(async () => {
     const workspaceConfigRepo = new FileWorkspaceConfigRepo();
-    const workspaceConfig = await workspaceConfigRepo.findWorkspace();
-    applyWorkspaceStage(workspaceConfig?.stage);
-
-    const resolveSiteId = new ResolveSiteId();
+    const resolveTarget = new ResolveTarget(deps.projectRepository);
 
     const commandAssetPushAll = new CommandAssetPushAll(
       deps.credentialsProvider,
       deps.presenter,
       workspaceConfigRepo,
-      resolveSiteId,
+      resolveTarget,
       deps.configLoader
     );
 
-    await commandAssetPushAll.execute(options);
+    await commandAssetPushAll.execute({ ...options });
   });
 }

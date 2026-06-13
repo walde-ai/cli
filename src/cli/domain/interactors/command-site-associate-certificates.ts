@@ -1,4 +1,4 @@
-import { WaldeAdminFactory, CredentialsProvider, CustomDomainStatus } from '@walde.ai/sdk';
+import { MakeWaldeAdmin, CredentialsProvider, CustomDomainStatus, CustomDomain } from '@walde.ai/sdk';
 import { ISitePresenter } from '@/cli/domain/ports/presenters/i-site-presenter';
 import { ILoadConfig } from '@/cli/domain/ports/in/i-load-config';
 
@@ -17,7 +17,7 @@ export class CommandSiteAssociateCertificates {
       this.presenter.startLoading('Associating certificates...');
 
       const config = await this.configLoader.execute();
-      const walde = WaldeAdminFactory.createAdmin({
+      const walde = MakeWaldeAdmin({
         credentialsProvider: this.credentialsProvider,
         endpoint: config.settings.endpoint,
         clientId: config.settings.clientId,
@@ -32,7 +32,7 @@ export class CommandSiteAssociateCertificates {
       if (result.isOk()) {
         const site = result.unwrap();
         const allVerified = site.customDomains.length > 0 &&
-          site.customDomains.every(cd => cd.status === CustomDomainStatus.VERIFIED);
+          site.customDomains.every((cd: CustomDomain) => cd.status === CustomDomainStatus.VERIFIED);
 
         if (allVerified) {
           this.presenter.presentCertificateAssociationSuccess();

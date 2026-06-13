@@ -1,30 +1,44 @@
-import { WaldeAdminFactory } from '@walde.ai/sdk';
+import { MakeWaldeAdmin } from '@walde.ai/sdk';
 import { CredentialsProvider } from '@walde.ai/sdk';
 
 import { IAssetPresenter } from '@/cli/domain/ports/presenters/i-asset-presenter';
 import { WorkspaceConfigRepo } from '@walde.ai/sdk';
-import { ResolveSiteId } from './resolve-site-id';
+import { ResolveTarget } from './resolve-target';
 import { ILoadConfig } from '@/cli/domain/ports/in/i-load-config';
 import { resolve, relative } from 'path';
 import { stat } from 'fs/promises';
 import { UserError } from '@/cli/domain/exceptions';
+import { ProjectWorkspaceConfig } from '@walde.ai/sdk';
 
 export class CommandAssetPush {
   constructor(
     private readonly credentialsProvider: CredentialsProvider,
     private readonly presenter: IAssetPresenter,
     private readonly workspaceConfigRepo: WorkspaceConfigRepo,
-    private readonly resolveSiteId: ResolveSiteId,
+    private readonly resolveTarget: ResolveTarget,
     private readonly configLoader: ILoadConfig
   ) {}
 
-  async execute(options: { filePath: string; key?: string; siteId?: string; noCacheInvalidation?: boolean }): Promise<void> {
+  async execute(options: { filePath: string; key?: string; siteId?: string; target?: string; noCacheInvalidation?: boolean }): Promise<void> {
     try {
-      const workspaceConfig = await this.workspaceConfigRepo.findWorkspace();
-      const siteId = this.resolveSiteId.execute(options.siteId, workspaceConfig, true);
-      if (!siteId) {
-        throw new UserError('Site ID is required for asset push command');
+      let workspaceConfig: ProjectWorkspaceConfig | undefined;
+
+      if (!options.siteId || !options.key) {
+        const found = await this.workspaceConfigRepo.findWorkspace();
+        if (!found) {
+          if (!options.siteId) {
+            throw new UserError('No workspace detected and no --site-id provided. Either run from a workspace directory or specify --site-id option.');
+          }
+        } else {
+          workspaceConfig = found;
+        }
       }
+
+      const { siteId } = await this.resolveTarget.execute({
+        siteIdOption: options.siteId,
+        targetOption: options.target,
+        workspaceConfig
+      });
 
       const resolvedFilePath = resolve(options.filePath);
       const fileStats = await stat(resolvedFilePath);
@@ -39,7 +53,10 @@ export class CommandAssetPush {
         }
         assetKey = options.key;
       } else {
-        const assetsPath = workspaceConfig?.paths?.assets || 'assets';
+        if (!workspaceConfig) {
+          throw new UserError('--key is required when using --site-id without a workspace');
+        }
+        const assetsPath = workspaceConfig.content.assetsPath;
         const resolvedAssetsPath = resolve(assetsPath);
         const relativePath = relative(resolvedAssetsPath, resolvedFilePath);
         if (relativePath.startsWith('..')) {
@@ -51,7 +68,7 @@ export class CommandAssetPush {
       this.presenter.showStarting(resolvedFilePath);
 
       const config = await this.configLoader.execute();
-      const walde = WaldeAdminFactory.createAdmin({
+      const walde = MakeWaldeAdmin({
         credentialsProvider: this.credentialsProvider,
         endpoint: config.settings.endpoint,
         clientId: config.settings.clientId,

@@ -1,4 +1,4 @@
-import { WaldeAdminFactory } from '@walde.ai/sdk';
+import { MakeWaldeAdmin } from '@walde.ai/sdk';
 import { CredentialsProvider } from '@walde.ai/sdk';
 import { CredentialParser } from '@/cli/domain/ports/out/credential-parser';
 import { ICredentialsPresenterV1 } from '@/cli/domain/ports/presenters/i-credentials-presenter-v1';
@@ -17,7 +17,7 @@ export class CommandGetCredentials {
    * Execute the get credentials command
    */
   async execute(): Promise<void> {
-    const walde = WaldeAdminFactory.createAdmin({
+    const walde = MakeWaldeAdmin({
       credentialsProvider: this.credentialsProvider
     });
 

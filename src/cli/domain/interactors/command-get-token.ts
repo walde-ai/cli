@@ -1,4 +1,4 @@
-import { WaldeAdminFactory } from '@walde.ai/sdk';
+import { MakeWaldeAdmin } from '@walde.ai/sdk';
 import { CredentialsProvider } from '@walde.ai/sdk';
 
 /**
@@ -11,7 +11,7 @@ export class CommandGetToken {
    * Execute the get token command
    */
   async execute(): Promise<void> {
-    const walde = WaldeAdminFactory.createAdmin({
+    const walde = MakeWaldeAdmin({
       credentialsProvider: this.credentialsProvider
     });
 

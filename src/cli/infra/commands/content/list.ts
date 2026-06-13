@@ -1,11 +1,9 @@
 import { Command } from 'commander';
 import { CredentialsProvider } from '@walde.ai/sdk';
-import { WorkspaceFactory } from '@/cli/infra/factories/workspace-factory';
 import { CommandContentList } from '@/cli/domain/interactors/command-content-list';
 import { Runtime } from '@/cli/infra/runtime';
 import { ILoadConfig } from '@/cli/domain/ports/in/i-load-config';
 import { IContentPresenter } from '@/cli/domain/ports/presenters/i-content-presenter';
-import { applyWorkspaceStage } from '../common-options';
 
 export type ContentListDependencies = {
   credentialsProvider: CredentialsProvider;
@@ -13,9 +11,6 @@ export type ContentListDependencies = {
   presenter: IContentPresenter;
 };
 
-/**
- * Creates the content list command
- */
 export function createListCommand(deps: ContentListDependencies): Command {
   const command = new Command('list');
   
@@ -29,22 +24,12 @@ export function createListCommand(deps: ContentListDependencies): Command {
   return command;
 }
 
-/**
- * Execute the content list command
- */
 async function executeContentList(deps: ContentListDependencies, options: { siteId?: string }): Promise<void> {
   const runtime = new Runtime();
   await runtime.run(async () => {
-    // Detect workspace configuration
-    const detectWorkspace = WorkspaceFactory.CreateDetectWorkspace();
-    const workspaceConfig = await detectWorkspace.execute();
-    applyWorkspaceStage(workspaceConfig?.stage);
+    const siteId = options.siteId || '';
     
-    // Resolve siteId from options or workspace (not required for list command)
-    const resolveSiteId = WorkspaceFactory.CreateResolveSiteId();
-    const siteId = resolveSiteId.execute(options.siteId, workspaceConfig, false);
-    
-    const commandContentList = new CommandContentList(siteId || '', deps.credentialsProvider, deps.presenter, deps.configLoader);
+    const commandContentList = new CommandContentList(siteId, deps.credentialsProvider, deps.presenter, deps.configLoader);
     await commandContentList.execute();
   });
 }

@@ -1,34 +1,47 @@
-import { WaldeAdminFactory } from '@walde.ai/sdk';
+import { MakeWaldeAdmin } from '@walde.ai/sdk';
 import { CredentialsProvider } from '@walde.ai/sdk';
 
 import { IAssetPresenter } from '@/cli/domain/ports/presenters/i-asset-presenter';
 import { WorkspaceConfigRepo } from '@walde.ai/sdk';
-import { ResolveSiteId } from './resolve-site-id';
+import { ResolveTarget } from './resolve-target';
 import { ILoadConfig } from '@/cli/domain/ports/in/i-load-config';
 import { resolve } from 'path';
 import { stat } from 'fs/promises';
 import { UserError } from '@/cli/domain/exceptions';
+import { ProjectWorkspaceConfig } from '@walde.ai/sdk';
 
 export class CommandAssetPushAll {
   constructor(
     private readonly credentialsProvider: CredentialsProvider,
     private readonly presenter: IAssetPresenter,
     private readonly workspaceConfigRepo: WorkspaceConfigRepo,
-    private readonly resolveSiteId: ResolveSiteId,
+    private readonly resolveTarget: ResolveTarget,
     private readonly configLoader: ILoadConfig
   ) {}
 
-  async execute(options: { path?: string; siteId?: string; noCacheInvalidation?: boolean }): Promise<void> {
+  async execute(options: { path?: string; siteId?: string; target?: string; noCacheInvalidation?: boolean }): Promise<void> {
     try {
-      const workspaceConfig = await this.workspaceConfigRepo.findWorkspace();
+      let workspaceConfig: ProjectWorkspaceConfig | undefined;
+
+      if (!options.siteId || !options.path) {
+        const found = await this.workspaceConfigRepo.findWorkspace();
+        if (!found) {
+          if (!options.siteId) {
+            throw new UserError('No workspace detected and no --site-id provided. Either run from a workspace directory or specify --site-id option.');
+          }
+        } else {
+          workspaceConfig = found;
+        }
+      }
 
       let assetsPath: string;
       if (options.path) {
         assetsPath = options.path;
-      } else if (workspaceConfig?.paths?.assets) {
-        assetsPath = workspaceConfig.paths.assets;
       } else {
-        throw new UserError('Assets path not specified. Use --path option or configure paths.assets in workspace config');
+        if (!workspaceConfig) {
+          throw new UserError('--path is required when using --site-id without a workspace');
+        }
+        assetsPath = workspaceConfig.content.assetsPath;
       }
 
       const resolvedAssetsPath = resolve(assetsPath);
@@ -37,15 +50,16 @@ export class CommandAssetPushAll {
         throw new UserError(`Asset path ${assetsPath} is not a directory`);
       }
 
-      const siteId = this.resolveSiteId.execute(options.siteId, workspaceConfig, true);
-      if (!siteId) {
-        throw new UserError('Site ID is required for asset push-all command');
-      }
+      const { siteId } = await this.resolveTarget.execute({
+        siteIdOption: options.siteId,
+        targetOption: options.target,
+        workspaceConfig
+      });
 
       this.presenter.showStarting(assetsPath);
 
       const config = await this.configLoader.execute();
-      const walde = WaldeAdminFactory.createAdmin({
+      const walde = MakeWaldeAdmin({
         credentialsProvider: this.credentialsProvider,
         endpoint: config.settings.endpoint,
         clientId: config.settings.clientId,

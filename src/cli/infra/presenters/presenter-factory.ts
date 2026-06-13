@@ -5,6 +5,8 @@ import { IUiPresenter } from '@/cli/domain/ports/presenters/i-ui-presenter';
 import { IAssetPresenter } from '@/cli/domain/ports/presenters/i-asset-presenter';
 import { ICachePresenter } from '@/cli/domain/ports/presenters/i-cache-presenter';
 import { IWorkspacePresenter } from '@/cli/domain/ports/presenters/i-workspace-presenter';
+import { IProjectPresenter } from '@/cli/domain/ports/presenters/i-project-presenter';
+import { IBriefPresenter } from '@/cli/domain/ports/presenters/i-brief-presenter';
 import { ICredentialsPresenterV1 } from '@/cli/domain/ports/presenters/i-credentials-presenter-v1';
 import { IFrontendManifestPresenter } from '@/cli/domain/ports/presenters/i-frontend-manifest-presenter';
 import { IFrontendContentPresenter } from '@/cli/domain/ports/presenters/i-frontend-content-presenter';
@@ -15,6 +17,8 @@ import { UiPresenterV1 } from './ui-presenter-v1';
 import { AssetPresenterV1 } from './asset-presenter-v1';
 import { CachePresenterV1 } from './cache-presenter-v1';
 import { WorkspacePresenterV1 } from './workspace-presenter-v1';
+import { ProjectPresenterV1 } from './project-presenter-v1';
+import { BriefPresenterV1 } from './brief-presenter-v1';
 import { CredentialsPresenterV1 } from './credentials-presenter-v1';
 import { FrontendManifestPresenterV1 } from './frontend-manifest-presenter-v1';
 import { FrontendContentPresenterV1 } from './frontend-content-presenter-v1';
@@ -96,11 +100,32 @@ export class PresenterFactory {
    * Create workspace presenter
    */
   public static createWorkspacePresenter(): IWorkspacePresenter {
+    const prompt = new DefaultPromptComponent();
+    const config = DefaultPresenterConfig;
+
+    return new WorkspacePresenterV1(prompt, config);
+  }
+
+  /**
+   * Create project presenter
+   */
+  public static createProjectPresenter(): IProjectPresenter {
     const spinner = new DefaultSpinnerComponent();
     const prompt = new DefaultPromptComponent();
     const config = DefaultPresenterConfig;
-    
-    return new WorkspacePresenterV1(spinner, prompt, config);
+
+    return new ProjectPresenterV1(spinner, prompt, config);
+  }
+
+  /**
+   * Create brief presenter
+   */
+  public static createBriefPresenter(): IBriefPresenter {
+    const spinner = new DefaultSpinnerComponent();
+    const prompt = new DefaultPromptComponent();
+    const config = DefaultPresenterConfig;
+
+    return new BriefPresenterV1(spinner, prompt, config);
   }
 
   /**

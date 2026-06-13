@@ -1,4 +1,4 @@
-import { UserError, SystemError, BaseError } from '@/cli/domain/exceptions';
+import { UserError, SystemError, BaseError, CancellationError } from '@/cli/domain/exceptions';
 import { 
   WaldeError, 
   WaldeUserError, 
@@ -11,8 +11,10 @@ import { UnexpectedErrorHandler } from './unexpected-error-handler';
 import { WaldeErrorHandler } from './walde-error-handler';
 import { WaldeSystemErrorHandler } from './walde-system-error-handler';
 import { ErrorHandler as BaseErrorHandler } from './base-error-handler';
+import { CancellationErrorHandler } from './cancellation-error-handler';
 
 enum ErrorType {
+  CANCELLATION,
   USER_ERROR,
   WALDE_USER_ERROR,
   WALDE_ERROR,
@@ -28,6 +30,7 @@ enum ErrorType {
  */
 export class ErrorHandler {
   private handlerFactories: Map<ErrorType, () => BaseErrorHandler<any>> = new Map([
+    [ErrorType.CANCELLATION, () => new CancellationErrorHandler()],
     [ErrorType.USER_ERROR, () => new SimpleMessageHandler()],
     [ErrorType.WALDE_USER_ERROR, () => new WaldeErrorHandler()],
     [ErrorType.WALDE_ERROR, () => new WaldeErrorHandler()],
@@ -41,6 +44,7 @@ export class ErrorHandler {
    * Detect error type based on instance checks
    */
   private detect(error: any): ErrorType {
+    if (error instanceof CancellationError) return ErrorType.CANCELLATION;
     if (error instanceof WaldeUnexpectedError) return ErrorType.WALDE_UNEXPECTED_ERROR;
     if (error instanceof WaldeUserError) return ErrorType.WALDE_USER_ERROR;
     if (error instanceof WaldeSystemError) return ErrorType.WALDE_SYSTEM_ERROR;

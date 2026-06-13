@@ -73,7 +73,7 @@ export class SitePresenterV1 implements ISitePresenter {
         CliTheme.body(site.name),
         CliTheme.body(site.region || CliTheme.soft('—')),
         stateColor(site.state),
-        CliTheme.body(site.url || 'Pending'),
+        CliTheme.body(site.url.isSome() ? site.url.value : 'Pending'),
         CliTheme.body(this.formatCustomDomainsSummary(site))
       ]);
     });
@@ -88,7 +88,7 @@ export class SitePresenterV1 implements ISitePresenter {
     console.log(CliTheme.body(`  ID:              ${site.id}`));
     console.log(CliTheme.body(`  Name:            ${site.name}`));
     console.log(CliTheme.body(`  Region:          ${site.region || 'N/A'}`));
-    console.log(CliTheme.body(`  URL:             ${site.url || 'Pending'}`));
+    console.log(CliTheme.body(`  URL:             ${site.url.isSome() ? site.url.value : 'Pending'}`));
     console.log(CliTheme.body(`  Custom Domains:  ${this.formatCustomDomainsSummary(site)}`));
   }
 
@@ -152,7 +152,7 @@ export class SitePresenterV1 implements ISitePresenter {
   }
 
   public async requestDeleteConfirmation(siteId: string): Promise<boolean> {
-    return this.prompt.confirm(`Are you sure you want to delete site ${siteId}? This cannot be undone.`);
+    return this.prompt.confirm(`Are you sure you want to delete site ${siteId}? This cannot be undone.`, false);
   }
 
   public presentSiteDeleted(): void {

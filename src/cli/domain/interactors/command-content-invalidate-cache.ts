@@ -1,34 +1,40 @@
-import { WaldeAdminFactory, CredentialsProvider, FileWorkspaceConfigRepo } from '@walde.ai/sdk';
+import { MakeWaldeAdmin, CredentialsProvider, FileWorkspaceConfigRepo, ProjectWorkspaceConfig } from '@walde.ai/sdk';
 import { ICachePresenter } from '@/cli/domain/ports/presenters/i-cache-presenter';
-import { ResolveSiteId } from '@/cli/domain/interactors/resolve-site-id';
+import { ResolveTarget } from '@/cli/domain/interactors/resolve-target';
 import { ILoadConfig } from '@/cli/domain/ports/in/i-load-config';
 import { UserError } from '@/cli/domain/exceptions';
 
-/**
- * Command interactor for content cache invalidation.
- */
 export class CommandContentInvalidateCache {
   constructor(
     private readonly credentialsProvider: CredentialsProvider,
     private readonly presenter: ICachePresenter,
-    private readonly resolveSiteId: ResolveSiteId,
+    private readonly resolveTarget: ResolveTarget,
     private readonly configLoader: ILoadConfig
   ) {}
 
-  async execute(options: { siteId?: string }): Promise<void> {
-    const workspaceConfigRepo = new FileWorkspaceConfigRepo();
-    const workspaceConfig = await workspaceConfigRepo.findWorkspace();
-    const siteId = this.resolveSiteId.execute(options.siteId, workspaceConfig, true);
+  async execute(options: { siteId?: string; target?: string }): Promise<void> {
+    let workspaceConfig: ProjectWorkspaceConfig | undefined;
 
-    if (!siteId) {
-      throw new UserError('Site ID is required for cache invalidation');
+    if (!options.siteId) {
+      const workspaceConfigRepo = new FileWorkspaceConfigRepo();
+      const found = await workspaceConfigRepo.findWorkspace();
+      if (!found) {
+        throw new UserError('No workspace detected and no --site-id provided. Either run from a workspace directory or specify --site-id option.');
+      }
+      workspaceConfig = found;
     }
+
+    const { siteId } = await this.resolveTarget.execute({
+      siteIdOption: options.siteId,
+      targetOption: options.target,
+      workspaceConfig
+    });
 
     this.presenter.startLoading('Invalidating rendered-content cache...');
 
     try {
       const config = await this.configLoader.execute();
-      const walde = WaldeAdminFactory.createAdmin({
+      const walde = MakeWaldeAdmin({
         credentialsProvider: this.credentialsProvider,
         endpoint: config.settings.endpoint,
         clientId: config.settings.clientId,

@@ -1,17 +1,16 @@
 import { Command } from 'commander';
 import { CredentialsProvider } from '@walde.ai/sdk';
 import { CommandCacheInvalidate } from '@/cli/domain/interactors/command-cache-invalidate';
-import { ResolveSiteId } from '@/cli/domain/interactors/resolve-site-id';
+import { ResolveTarget, IProjectRepository } from '@/cli/domain/interactors/resolve-target';
 import { Runtime } from '@/cli/infra/runtime';
 import { ILoadConfig } from '@/cli/domain/ports/in/i-load-config';
 import { ICachePresenter } from '@/cli/domain/ports/presenters/i-cache-presenter';
-import { applyWorkspaceStage } from '../common-options';
-import { FileWorkspaceConfigRepo } from '@walde.ai/sdk';
 
 export type CacheInvalidateDependencies = {
   credentialsProvider: CredentialsProvider;
   configLoader: ILoadConfig;
   presenter: ICachePresenter;
+  projectRepository: IProjectRepository;
 };
 
 /**
@@ -23,27 +22,24 @@ export function createCacheInvalidateCommand(deps: CacheInvalidateDependencies):
   command
     .description('Invalidate the CloudFront cache for a site')
     .option('--site-id <siteId>', 'Site identifier')
-    .action(async (options: { siteId?: string }) => {
+    .option('--target <stageName>', 'Project stage to deploy to (default: prod)')
+    .action(async (options: { siteId?: string; target?: string }) => {
       await executeCacheInvalidate(deps, options);
     });
 
   return command;
 }
 
-async function executeCacheInvalidate(deps: CacheInvalidateDependencies, options: { siteId?: string }): Promise<void> {
+async function executeCacheInvalidate(deps: CacheInvalidateDependencies, options: { siteId?: string; target?: string }): Promise<void> {
   const runtime = new Runtime();
   await runtime.run(async () => {
-    const workspaceConfigRepo = new FileWorkspaceConfigRepo();
-    const workspaceConfig = await workspaceConfigRepo.findWorkspace();
-    applyWorkspaceStage(workspaceConfig?.stage);
-
-    const resolveSiteId = new ResolveSiteId();
+    const resolveTarget = new ResolveTarget(deps.projectRepository);
     const interactor = new CommandCacheInvalidate(
       deps.credentialsProvider,
       deps.presenter,
-      resolveSiteId,
+      resolveTarget,
       deps.configLoader
     );
-    await interactor.execute(options);
+    await interactor.execute({ siteId: options.siteId, target: options.target });
   });
 }

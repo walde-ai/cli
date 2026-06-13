@@ -9,6 +9,13 @@ import { createUiCommandGroup } from './ui/index';
 import { createFrontendCommandGroup } from './frontend/index';
 import { createAssetCommandGroup } from './asset/index';
 import { createCacheCommandGroup } from './cache/index';
+import { createWsCommandGroup } from './ws/index';
+import { createPushCommandGroup } from './push/index';
+import { createProjectCommandGroup } from './project/index';
+import { createBriefCommandGroup } from './brief/index';
+import { createApiCommandGroup } from './api/index';
+import { createDevCommandGroup } from './dev/index';
+import { createCloudCommandGroup } from './cloud/index';
 import { DependencyFactory } from '@/cli/infra/factories/dependency-factory';
 import { withCommonOptions } from './common-options';
 
@@ -36,6 +43,13 @@ export function createProgram(factory: DependencyFactory): Command {
   program.addCommand(withCommonOptions(createFrontendCommandGroup(factory.createFrontendCommandGroupDependencies())));
   program.addCommand(withCommonOptions(createAssetCommandGroup(factory.createAssetCommandGroupDependencies())));
   program.addCommand(withCommonOptions(createCacheCommandGroup(factory.createCacheCommandGroupDependencies())));
+  program.addCommand(withCommonOptions(createWsCommandGroup(factory.createWsCommandGroupDependencies())));
+  program.addCommand(withCommonOptions(createPushCommandGroup(factory.createPushCommandGroupDependencies())));
+  program.addCommand(withCommonOptions(createProjectCommandGroup(factory.createProjectCommandGroupDependencies())));
+  program.addCommand(withCommonOptions(createBriefCommandGroup(factory.createBriefCommandGroupDependencies())));
+  program.addCommand(withCommonOptions(createApiCommandGroup(factory.createApiCommandGroupDependencies())));
+  program.addCommand(withCommonOptions(createDevCommandGroup(factory.createDevCommandGroupDependencies())));
+  program.addCommand(withCommonOptions(createCloudCommandGroup(factory.createCloudCommandGroupDependencies())));
 
   return program;
 }

@@ -10,6 +10,21 @@ import { getCurrentStage } from '../commands/common-options';
  */
 export class ConfigLoaderFactory {
   /**
+   * Optional override for the API endpoint. Set once at the CLI
+   * composition root from `WALDE_API_ENDPOINT` and used as the highest
+   * priority configuration layer when loading the SDK config.
+   */
+  private static endpointOverride: string | undefined;
+
+  /**
+   * Set the endpoint override read from the environment at startup.
+   * Intended to be called exactly once from the CLI entry point.
+   */
+  public static setEndpointOverride(endpoint: string | undefined): void {
+    this.endpointOverride = endpoint;
+  }
+
+  /**
    * Create LoadConfig interactor with SDK configuration
    */
   public static Create(): LoadConfig {
@@ -24,6 +39,6 @@ export class ConfigLoaderFactory {
       })
     ];
 
-    return new LoadConfig(credentialsRepos);
+    return new LoadConfig(credentialsRepos, this.endpointOverride);
   }
 }

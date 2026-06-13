@@ -1,12 +1,13 @@
-import { WaldeAdminFactory } from '@walde.ai/sdk';
+import { MakeWaldeAdmin } from '@walde.ai/sdk';
 import { CredentialsProvider } from '@walde.ai/sdk';
 import { IUiPresenter } from '@/cli/domain/ports/presenters/i-ui-presenter';
 import { WorkspaceConfigRepo } from '@walde.ai/sdk';
-import { ResolveSiteId } from './resolve-site-id';
+import { ResolveTarget } from './resolve-target';
 import { ILoadConfig } from '@/cli/domain/ports/in/i-load-config';
 import { resolve } from 'path';
 import { stat } from 'fs/promises';
 import { UserError } from '@/cli/domain/exceptions';
+import { ProjectWorkspaceConfig } from '@walde.ai/sdk';
 
 /**
  * Command interactor for UI push operations
@@ -16,50 +17,47 @@ export class CommandUiPush {
     private readonly credentialsProvider: CredentialsProvider,
     private readonly presenter: IUiPresenter,
     private readonly workspaceConfigRepo: WorkspaceConfigRepo,
-    private readonly resolveSiteId: ResolveSiteId,
+    private readonly resolveTarget: ResolveTarget,
     private readonly configLoader: ILoadConfig
   ) {}
 
-  /**
-   * Execute UI push command
-   * @param options - Command options
-   */
-  async execute(options: { path?: string; siteId?: string; noCacheInvalidation?: boolean }): Promise<void> {
+  async execute(options: { path?: string; siteId?: string; target?: string; noCacheInvalidation?: boolean }): Promise<void> {
     try {
-      // Detect workspace configuration
-      const workspaceConfig = await this.workspaceConfigRepo.findWorkspace();
-      
-      // Resolve UI path from options or workspace config
       let uiPath: string;
-      if (options.path) {
+      let workspaceConfig: ProjectWorkspaceConfig | undefined;
+
+      if (options.siteId) {
+        if (!options.path) {
+          throw new UserError('--path is required when using --site-id without a workspace');
+        }
         uiPath = options.path;
-      } else if (workspaceConfig?.paths?.ui) {
-        uiPath = workspaceConfig.paths.ui;
       } else {
-        throw new UserError('UI path not specified. Use --path option or configure paths.ui in workspace config');
+        const result = await this.workspaceConfigRepo.findWorkspaceWithRoot();
+        if (!result) {
+          throw new UserError('No workspace detected and no --site-id provided. Either run from a workspace directory or specify --site-id option.');
+        }
+        workspaceConfig = result.config;
+        const rootPath = result.rootPath;
+        uiPath = options.path ?? resolve(rootPath, workspaceConfig.ui.workingDirectory, workspaceConfig.ui.distFolder);
       }
 
-      // Resolve and validate UI path
       const resolvedUiPath = resolve(uiPath);
       const stats = await stat(resolvedUiPath);
       if (!stats.isDirectory()) {
         throw new UserError(`UI path ${uiPath} is not a directory`);
       }
-      
-      // Resolve siteId from options or workspace (required for push command)
-      const siteId = this.resolveSiteId.execute(options.siteId, workspaceConfig, true);
-      
-      if (!siteId) {
-        throw new UserError('Site ID is required for UI push command');
-      }
+
+      const { siteId } = await this.resolveTarget.execute({
+        siteIdOption: options.siteId,
+        targetOption: options.target,
+        workspaceConfig
+      });
 
       this.presenter.showStarting(uiPath);
       
-      // Load config to get endpoint and s3ClientFactory
       const config = await this.configLoader.execute();
       
-      // Create SDK instance and execute UI upload
-      const walde = WaldeAdminFactory.createAdmin({ 
+      const walde = MakeWaldeAdmin({ 
         credentialsProvider: this.credentialsProvider, 
         endpoint: config.settings.endpoint,
         clientId: config.settings.clientId,

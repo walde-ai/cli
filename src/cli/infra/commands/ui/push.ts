@@ -1,17 +1,16 @@
 import { Command } from 'commander';
-import { CredentialsProvider } from '@walde.ai/sdk';
+import { CredentialsProvider, FileWorkspaceConfigRepo } from '@walde.ai/sdk';
 import { CommandUiPush } from '@/cli/domain/interactors/command-ui-push';
-import { FileWorkspaceConfigRepo } from '@walde.ai/sdk';
-import { ResolveSiteId } from '@/cli/domain/interactors/resolve-site-id';
+import { ResolveTarget, IProjectRepository } from '@/cli/domain/interactors/resolve-target';
 import { Runtime } from '@/cli/infra/runtime';
 import { ILoadConfig } from '@/cli/domain/ports/in/i-load-config';
 import { IUiPresenter } from '@/cli/domain/ports/presenters/i-ui-presenter';
-import { applyWorkspaceStage } from '../common-options';
 
 export type UiPushDependencies = {
   credentialsProvider: CredentialsProvider;
   configLoader: ILoadConfig;
   presenter: IUiPresenter;
+  projectRepository: IProjectRepository;
 };
 
 /**
@@ -24,11 +23,13 @@ export function createUiPushCommand(deps: UiPushDependencies): Command {
     .description('Push UI files to S3')
     .option('--path <uiPath>', 'Path to the UI directory')
     .option('--site-id <siteId>', 'Site identifier')
+    .option('--target <stageName>', 'Project stage to deploy to (default: prod)')
     .option('--no-cache-invalidation', 'Skip automatic CloudFront cache invalidation after upload')
-    .action(async (options: { path?: string; siteId?: string; cacheInvalidation?: boolean }) => {
+    .action(async (options: { path?: string; siteId?: string; target?: string; cacheInvalidation?: boolean }) => {
       await executeUiPush(deps, {
         path: options.path,
         siteId: options.siteId,
+        target: options.target,
         noCacheInvalidation: options.cacheInvalidation === false
       });
     });
@@ -36,28 +37,25 @@ export function createUiPushCommand(deps: UiPushDependencies): Command {
   return command;
 }
 
-/**
- * Execute the UI push command
- */
-async function executeUiPush(deps: UiPushDependencies, options: { path?: string; siteId?: string; noCacheInvalidation?: boolean }): Promise<void> {
+async function executeUiPush(deps: UiPushDependencies, options: { path?: string; siteId?: string; target?: string; noCacheInvalidation?: boolean }): Promise<void> {
   const runtime = new Runtime();
   await runtime.run(async () => {
-    // Create remaining dependencies
     const workspaceConfigRepo = new FileWorkspaceConfigRepo();
-    const workspaceConfig = await workspaceConfigRepo.findWorkspace();
-    applyWorkspaceStage(workspaceConfig?.stage);
+    const resolveTarget = new ResolveTarget(deps.projectRepository);
 
-    const resolveSiteId = new ResolveSiteId();
-
-    // Create and execute command interactor
     const commandUiPush = new CommandUiPush(
       deps.credentialsProvider,
       deps.presenter,
       workspaceConfigRepo,
-      resolveSiteId,
+      resolveTarget,
       deps.configLoader
     );
 
-    await commandUiPush.execute(options);
+    await commandUiPush.execute({
+      path: options.path,
+      siteId: options.siteId,
+      target: options.target,
+      noCacheInvalidation: options.noCacheInvalidation
+    });
   });
 }

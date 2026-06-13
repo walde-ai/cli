@@ -1,4 +1,4 @@
-import { WaldeAdminFactory, CredentialsProvider } from '@walde.ai/sdk';
+import { MakeWaldeAdmin, CredentialsProvider } from '@walde.ai/sdk';
 import { IContentPresenter } from '@/cli/domain/ports/presenters/i-content-presenter';
 import { ILoadConfig } from '@/cli/domain/ports/in/i-load-config';
 import { SystemError } from '@/cli/domain/exceptions';
@@ -19,7 +19,7 @@ export class CommandContentList {
 
     try {
       const config = await this.configLoader.execute();
-      const walde = WaldeAdminFactory.createAdmin({ 
+      const walde = MakeWaldeAdmin({ 
         credentialsProvider: this.credentialsProvider,
         endpoint: config.settings.endpoint,
         clientId: config.settings.clientId,

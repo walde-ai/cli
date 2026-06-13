@@ -1,6 +1,6 @@
 {
   "name": "@walde.ai/cli",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Command Line Interface for Walde",
   "type": "module",
   "bin": {
@@ -8,8 +8,6 @@
   },
   "scripts": {
     "dev": "node --loader ts-node/esm src/dev.ts",
-    "prebuild": "node -e \"try{const fs=require('fs');fs.cpSync('../sdk/dist','node_modules/@walde.ai/sdk/dist',{recursive:true,force:true});fs.cpSync('../sdk/package.json','node_modules/@walde.ai/sdk/package.json',{force:true});}catch(e){if(e&&e.code!=='ENOENT'){console.error(e);process.exit(1);}}\"",
-    "prebuild:dev": "node -e \"try{const fs=require('fs');fs.cpSync('../sdk/dist','node_modules/@walde.ai/sdk/dist',{recursive:true,force:true});fs.cpSync('../sdk/package.json','node_modules/@walde.ai/sdk/package.json',{force:true});}catch(e){if(e&&e.code!=='ENOENT'){console.error(e);process.exit(1);}}\"",
     "build": "tsc && node build.mjs",
     "build:dev": "tsc && node build-dev.mjs"
   },
@@ -19,7 +17,7 @@
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.0.0",
     "@aws-sdk/client-s3": "^3.0.0",
-    "@walde.ai/sdk": "0.0.5",
+    "@walde.ai/sdk": "0.0.6",
     "amazon-cognito-identity-js": "^6.3.12",
     "chalk": "^5.3.0",
     "cli-table3": "^0.6.3",
@@ -27,7 +25,9 @@
     "gray-matter": "^4.0.3",
     "inquirer": "^9.2.0",
     "ora": "^8.1.0",
-    "prompts": "^2.4.2"
+    "prompts": "^2.4.2",
+    "ws": "^8.20.0",
+    "@walde.ai/ws-protocol": "0.0.6"
   },
   "devDependencies": {
     "@types/inquirer": "^9.0.0",

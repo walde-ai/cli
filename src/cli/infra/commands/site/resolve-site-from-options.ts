@@ -1,8 +1,7 @@
-import { CredentialsProvider, WaldeAdminFactory, FileWorkspaceConfigRepo } from '@walde.ai/sdk';
+import { MakeWaldeAdmin, CredentialsProvider, FileWorkspaceConfigRepo } from '@walde.ai/sdk';
 import { ILoadConfig } from '@/cli/domain/ports/in/i-load-config';
 import { ISitePresenter } from '@/cli/domain/ports/presenters/i-site-presenter';
 import { ResolveSiteIdentifier } from '@/cli/domain/interactors/resolve-site-identifier';
-import { applyWorkspaceStage } from '../common-options';
 
 export interface SiteResolutionParams {
   name?: string;
@@ -17,16 +16,10 @@ export interface SiteResolutionDependencies {
 
 /**
  * Resolves a site ID from --name, --id, or interactive selection.
- * Detects workspace config for stage fallback, then fetches the site list
- * from the API and delegates to ResolveSiteIdentifier.
  */
 export async function resolveSiteFromOptions(deps: SiteResolutionDependencies, params: SiteResolutionParams): Promise<string> {
-  const workspaceConfigRepo = new FileWorkspaceConfigRepo();
-  const workspaceConfig = await workspaceConfigRepo.findWorkspace();
-  applyWorkspaceStage(workspaceConfig?.stage);
-
   const config = await deps.configLoader.execute();
-  const walde = WaldeAdminFactory.createAdmin({
+  const walde = MakeWaldeAdmin({
     credentialsProvider: deps.credentialsProvider,
     endpoint: config.settings.endpoint,
     clientId: config.settings.clientId,

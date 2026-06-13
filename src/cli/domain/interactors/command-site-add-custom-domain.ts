@@ -1,4 +1,4 @@
-import { WaldeAdminFactory, CredentialsProvider } from '@walde.ai/sdk';
+import { MakeWaldeAdmin, CredentialsProvider } from '@walde.ai/sdk';
 import { ISitePresenter } from '@/cli/domain/ports/presenters/i-site-presenter';
 import { ILoadConfig } from '@/cli/domain/ports/in/i-load-config';
 
@@ -17,7 +17,7 @@ export class CommandSiteAddCustomDomain {
       this.presenter.startLoading(`Adding custom domain "${domain}" to site ${siteId}...`);
 
       const config = await this.configLoader.execute();
-      const walde = WaldeAdminFactory.createAdmin({
+      const walde = MakeWaldeAdmin({
         credentialsProvider: this.credentialsProvider,
         endpoint: config.settings.endpoint,
         clientId: config.settings.clientId,

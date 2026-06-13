@@ -1,4 +1,4 @@
-import { WaldeAdminFactory } from '@walde.ai/sdk';
+import { MakeWaldeAdmin } from '@walde.ai/sdk';
 import { CredentialsProvider } from '@walde.ai/sdk';
 import { ICredentialsPresenterV1 } from '@/cli/domain/ports/presenters/i-credentials-presenter-v1';
 
@@ -18,7 +18,7 @@ export class CommandRefreshCredentials {
    * Execute the refresh credentials command
    */
   async execute(): Promise<void> {
-    const walde = WaldeAdminFactory.createAdmin({
+    const walde = MakeWaldeAdmin({
       credentialsProvider: this.credentialsProvider,
       clientId: this.clientId,
       region: this.region,
