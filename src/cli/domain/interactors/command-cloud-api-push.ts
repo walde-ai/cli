@@ -5,6 +5,7 @@ import { CredentialsProvider, MakeWaldeAdmin, ProjectWorkspaceConfig } from '@wa
 import { ResolveTarget } from './resolve-target';
 import { IPushPresenter } from '@/cli/domain/ports/presenters/i-push-presenter';
 import { ILoadConfig } from '@/cli/domain/ports/in/i-load-config';
+import { ICloudDependencyInstaller } from '@/cli/domain/ports/out/cloud-dependency-installer';
 import { UserError } from '@/cli/domain/exceptions';
 import { FileWorkspaceConfigRepo } from '@walde.ai/sdk';
 
@@ -22,7 +23,8 @@ export class CommandCloudApiPush {
     private readonly resolveTarget: ResolveTarget,
     private readonly presenter: IPushPresenter,
     private readonly credentialsProvider: CredentialsProvider,
-    private readonly configLoader: ILoadConfig
+    private readonly configLoader: ILoadConfig,
+    private readonly cloudDependencyInstaller: ICloudDependencyInstaller
   ) {}
 
   async execute(options: CommandCloudApiPushOptions): Promise<void> {
@@ -56,6 +58,10 @@ export class CommandCloudApiPush {
       clientId: config.settings.clientId,
       region: config.settings.region,
       s3ClientFactory: config.s3ClientFactory,
+    });
+
+    await this.runStep('Installing cloud dependencies...', async () => {
+      await this.cloudDependencyInstaller.install({ cloudApisDirectory: cloudApisPath });
     });
 
     await this.runStep('Pushing cloud APIs...', async () => {

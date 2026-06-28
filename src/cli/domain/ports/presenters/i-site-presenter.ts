@@ -16,6 +16,7 @@ export interface ISitePresenter {
   presentError(message: string): void;
   presentProvisioningFailed(): void;
   requestDeleteConfirmation(siteId: string): Promise<boolean>;
+  presentDeletionRequested(siteId: string): void;
   presentSiteDeleted(): void;
   presentDeletionFailed(): void;
   presentDeletionCancelled(): void;

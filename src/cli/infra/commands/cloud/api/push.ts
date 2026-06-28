@@ -5,6 +5,7 @@ import { ResolveTarget, IProjectRepository } from '@/cli/domain/interactors/reso
 import { Runtime } from '@/cli/infra/runtime';
 import { ILoadConfig } from '@/cli/domain/ports/in/i-load-config';
 import { IPushPresenter } from '@/cli/domain/ports/presenters/i-push-presenter';
+import { ICloudDependencyInstaller } from '@/cli/domain/ports/out/cloud-dependency-installer';
 import { CommandCloudApiPush } from '@/cli/domain/interactors/command-cloud-api-push';
 import { PushPresenterV1 } from '@/cli/infra/presenters/push-presenter-v1';
 
@@ -13,6 +14,7 @@ export type CloudApiPushDependencies = {
   configLoader: ILoadConfig;
   presenter?: IPushPresenter;
   projectRepository: IProjectRepository;
+  cloudDependencyInstaller: ICloudDependencyInstaller;
 };
 
 export function createCloudApiPushCommand(deps: CloudApiPushDependencies): Command {
@@ -32,7 +34,8 @@ export function createCloudApiPushCommand(deps: CloudApiPushDependencies): Comma
           resolveTarget,
           presenter,
           deps.credentialsProvider,
-          deps.configLoader
+          deps.configLoader,
+          deps.cloudDependencyInstaller
         );
 
         await interactor.execute({

@@ -14,7 +14,7 @@ await build({
   outfile: 'dist-dev/cli.cjs',
   minify: false,              // Keep readable for debugging
   sourcemap: true,            // Enable source maps for debugging
-  external: ['fsevents']
+  external: ['fsevents', 'esbuild']
 }).catch(() => process.exit(1));
 
 // Add shebang

@@ -4,6 +4,7 @@ import { MakeWaldeAdmin, CredentialsProvider, ProjectWorkspaceConfig } from '@wa
 import { ResolveTarget } from '@/cli/domain/interactors/resolve-target';
 import { IPushPresenter } from '@/cli/domain/ports/presenters/i-push-presenter';
 import { ILoadConfig } from '@/cli/domain/ports/in/i-load-config';
+import { ICloudDependencyInstaller } from '@/cli/domain/ports/out/cloud-dependency-installer';
 import { resolve } from 'path';
 
 export interface CommandPushOptions {
@@ -21,7 +22,8 @@ export class CommandPush {
     private readonly resolveTarget: ResolveTarget,
     private readonly presenter: IPushPresenter,
     private readonly credentialsProvider: CredentialsProvider,
-    private readonly configLoader: ILoadConfig
+    private readonly configLoader: ILoadConfig,
+    private readonly cloudDependencyInstaller: ICloudDependencyInstaller
   ) {}
 
   async execute(workspaceConfig: ProjectWorkspaceConfig, rootPath: string, options: CommandPushOptions): Promise<void> {
@@ -98,6 +100,10 @@ export class CommandPush {
 
     const cloudApisPath = resolve(rootPath, 'dev/cloud/src/apis');
     if (existsSync(cloudApisPath)) {
+      await this.runStep('Installing cloud dependencies...', async () => {
+        await this.cloudDependencyInstaller.install({ cloudApisDirectory: cloudApisPath });
+      });
+
       await this.runStep('Pushing cloud APIs...', async () => {
         const result = await walde.site({ id: siteId })
           .cloud()

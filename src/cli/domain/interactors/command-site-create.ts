@@ -15,7 +15,7 @@ export class CommandSiteCreate {
     private readonly configLoader: ILoadConfig
   ) {}
 
-  async execute(siteName: string | undefined, region: string): Promise<void> {
+  async execute(siteName: string | undefined, region: string, waitSeconds?: number): Promise<void> {
     try {
       const finalSiteName = siteName !== undefined ? siteName : await this.presenter.requestSiteName();
 
@@ -46,10 +46,13 @@ export class CommandSiteCreate {
       }
 
       this.presenter.stopLoading();
+      if (waitSeconds === undefined) {
+        this.presenter.presentSiteCreated(createdSite);
+        return;
+      }
+
       this.presenter.startLoading('Provisioning site resources...');
-
-      const readyResult = await walde.site({ id: createdSite.id }).ready().resolve();
-
+      const readyResult = await walde.site({ id: createdSite.id }).ready({ timeoutMs: waitSeconds * 1000 }).resolve();
       this.presenter.stopLoading();
 
       if (readyResult.isOk()) {

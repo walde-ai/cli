@@ -3,3 +3,4 @@ export { JWTCredentialParser } from './jwt-credential-parser';
 export { CognitoTokenRefreshProvider } from './cognito-token-refresh-provider';
 export { NodeProcessSpawner } from './node-process-spawner';
 export { SdkWorkspaceRootResolver } from './sdk-workspace-root-resolver';
+export { CloudDependencyInstaller } from './cloud-dependency-installer';

@@ -155,6 +155,10 @@ export class SitePresenterV1 implements ISitePresenter {
     return this.prompt.confirm(`Are you sure you want to delete site ${siteId}? This cannot be undone.`, false);
   }
 
+  public presentDeletionRequested(siteId: string): void {
+    console.log(CliTheme.accent(`✓ Site deletion requested: ${siteId}`));
+  }
+
   public presentSiteDeleted(): void {
     console.log(CliTheme.accent('✓ Site deleted'));
   }

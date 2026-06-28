@@ -15,7 +15,7 @@ export class CommandSiteDelete {
     private readonly configLoader: ILoadConfig
   ) {}
 
-  async execute(siteId: string, options: { confirm?: boolean }): Promise<void> {
+  async execute(siteId: string, options: { confirm?: boolean; waitSeconds?: number }): Promise<void> {
     try {
       const confirmed = options.confirm || await this.presenter.requestDeleteConfirmation(siteId);
 
@@ -35,7 +35,8 @@ export class CommandSiteDelete {
         s3ClientFactory: config.s3ClientFactory
       });
 
-      const deleteResult = await walde.site({ id: siteId }).delete().resolve();
+      const deleteFuture = walde.site({ id: siteId }).delete();
+      const deleteResult = await deleteFuture.resolve();
 
       if (deleteResult.isErr()) {
         this.presenter.stopLoading();
@@ -43,10 +44,16 @@ export class CommandSiteDelete {
         return;
       }
 
+      if (options.waitSeconds === undefined) {
+        this.presenter.stopLoading();
+        this.presenter.presentDeletionRequested(siteId);
+        return;
+      }
+
       this.presenter.stopLoading();
       this.presenter.startLoading('Waiting for site deletion to complete...');
 
-      const awaitResult = await walde.site({ id: siteId }).awaitDeleted().resolve();
+      const awaitResult = await deleteFuture.ready({ timeoutMs: options.waitSeconds * 1000 }).resolve();
 
       this.presenter.stopLoading();
 

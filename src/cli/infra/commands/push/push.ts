@@ -6,11 +6,13 @@ import { PushPresenterV1 } from '@/cli/infra/presenters/push-presenter-v1';
 import { Runtime } from '@/cli/infra/runtime';
 import { UserError } from '@/cli/domain/exceptions';
 import { ILoadConfig } from '@/cli/domain/ports/in/i-load-config';
+import { ICloudDependencyInstaller } from '@/cli/domain/ports/out/cloud-dependency-installer';
 
 export type PushCommandDependencies = {
   credentialsProvider: CredentialsProvider;
   configLoader: ILoadConfig;
   projectRepository: IProjectRepository;
+  cloudDependencyInstaller: ICloudDependencyInstaller;
 };
 
 /**
@@ -52,7 +54,8 @@ async function executePush(
       resolveTarget,
       presenter,
       deps.credentialsProvider,
-      deps.configLoader
+      deps.configLoader,
+      deps.cloudDependencyInstaller
     );
 
     await commandPush.execute(workspaceConfig, rootPath, {

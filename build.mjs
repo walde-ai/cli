@@ -11,7 +11,7 @@ await build({
   outfile: 'dist/cli.cjs',
   minify: true,
   sourcemap: false,
-  external: ['fsevents']           // exclude problematic optional dependencies only
+  external: ['fsevents', 'esbuild'] // keep esbuild external for require.resolve at runtime
 }).catch(() => process.exit(1));
 
 // Add shebang manually (check if it already exists)

@@ -22,7 +22,7 @@ import { PresenterFactory } from '@/cli/infra/presenters/presenter-factory';
 import { ICredentialsRepoFactory } from '@/cli/domain/ports/in/i-credentials-repo-factory';
 import { JWTCredentialParser } from '@/cli/infra/adapters/out/jwt-credential-parser';
 import { ApiProjectRepository } from '@/cli/infra/adapters/api-project-repository';
-import { NodeProcessSpawner, SdkWorkspaceRootResolver } from '@/cli/infra/adapters/out';
+import { NodeProcessSpawner, SdkWorkspaceRootResolver, CloudDependencyInstaller } from '@/cli/infra/adapters/out';
 
 export class DevDependencyFactory implements DependencyFactory {
   constructor(
@@ -208,6 +208,7 @@ export class DevDependencyFactory implements DependencyFactory {
         credentialsProvider: this.createCredentialsProvider(),
         configLoader: this.createConfigLoader(),
         projectRepository: this.createProjectRepository(),
+        cloudDependencyInstaller: new CloudDependencyInstaller(),
       },
     };
   }
@@ -276,6 +277,7 @@ export class DevDependencyFactory implements DependencyFactory {
           credentialsProvider: this.createCredentialsProvider(),
           configLoader: this.createConfigLoader(),
           projectRepository: this.createProjectRepository(),
+          cloudDependencyInstaller: new CloudDependencyInstaller(),
         },
       },
     };

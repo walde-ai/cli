@@ -21,7 +21,7 @@ import { ConfigLoaderFactory } from '@/cli/infra/factories/index';
 import { PresenterFactory } from '@/cli/infra/presenters/presenter-factory';
 import { JWTCredentialParser } from '@/cli/infra/adapters/out/jwt-credential-parser';
 import { ApiProjectRepository } from '@/cli/infra/adapters/api-project-repository';
-import { NodeProcessSpawner, SdkWorkspaceRootResolver } from '@/cli/infra/adapters/out';
+import { NodeProcessSpawner, SdkWorkspaceRootResolver, CloudDependencyInstaller } from '@/cli/infra/adapters/out';
 /**
  * Production dependency factory that creates dependencies using production services
  */
@@ -192,6 +192,7 @@ export class ProductionDependencyFactory implements DependencyFactory {
         credentialsProvider: this.createCredentialsRepo(),
         configLoader: ConfigLoaderFactory.Create(),
         projectRepository: this.createProjectRepository(),
+        cloudDependencyInstaller: new CloudDependencyInstaller(),
       },
     };
   }
@@ -264,6 +265,7 @@ export class ProductionDependencyFactory implements DependencyFactory {
           credentialsProvider: this.createCredentialsRepo(),
           configLoader: ConfigLoaderFactory.Create(),
           projectRepository: this.createProjectRepository(),
+          cloudDependencyInstaller: new CloudDependencyInstaller(),
         },
       },
     };

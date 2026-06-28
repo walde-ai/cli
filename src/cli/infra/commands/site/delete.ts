@@ -23,14 +23,22 @@ export function createDeleteCommand(deps: SiteDeleteDependencies): Command {
     .option('--name <name>', 'Site name')
     .option('--id <id>', 'Site ID')
     .option('--confirm', 'Skip confirmation prompt')
-    .action(async (options: { name?: string; id?: string; confirm?: boolean }) => {
+    .option('--wait <timeout-seconds>', 'Wait for completion with timeout in seconds')
+    .action(async (options: { name?: string; id?: string; confirm?: boolean; wait?: string }) => {
       await executeSiteDelete(deps, options);
     });
 
   return command;
 }
 
-async function executeSiteDelete(deps: SiteDeleteDependencies, options: { name?: string; id?: string; confirm?: boolean }): Promise<void> {
+async function executeSiteDelete(
+  deps: SiteDeleteDependencies,
+  options: { name?: string; id?: string; confirm?: boolean; wait?: string }
+): Promise<void> {
+  const waitSeconds = options.wait === undefined ? undefined : Number(options.wait);
+  if (waitSeconds !== undefined && (!Number.isFinite(waitSeconds) || waitSeconds <= 0)) {
+    throw new Error('--wait must be a positive number of seconds');
+  }
   const runtime = new Runtime();
   await runtime.run(async () => {
     const siteId = await resolveSiteFromOptions(deps, { name: options.name, id: options.id });
@@ -41,6 +49,6 @@ async function executeSiteDelete(deps: SiteDeleteDependencies, options: { name?:
       deps.configLoader
     );
 
-    await commandSiteDelete.execute(siteId, { confirm: options.confirm });
+    await commandSiteDelete.execute(siteId, { confirm: options.confirm, waitSeconds });
   });
 }

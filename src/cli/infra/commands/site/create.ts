@@ -21,14 +21,24 @@ export function createCreateCommand(deps: SiteCreateDependencies): Command {
     .description('Create a new site')
     .argument('[site-name]', 'Name for the new site')
     .requiredOption('--region <region>', 'AWS region for site resources (e.g., us-east-1)')
-    .action(async (siteName: string | undefined, options: { region: string }) => {
-      await executeSiteCreate(deps, siteName, options.region);
+    .option('--wait <timeout-seconds>', 'Wait for completion with timeout in seconds')
+    .action(async (siteName: string | undefined, options: { region: string; wait?: string }) => {
+      const waitSeconds = options.wait === undefined ? undefined : Number(options.wait);
+      await executeSiteCreate(deps, siteName, options.region, waitSeconds);
     });
 
   return command;
 }
 
-async function executeSiteCreate(deps: SiteCreateDependencies, siteName: string | undefined, region: string): Promise<void> {
+async function executeSiteCreate(
+  deps: SiteCreateDependencies,
+  siteName: string | undefined,
+  region: string,
+  waitSeconds?: number
+): Promise<void> {
+  if (waitSeconds !== undefined && (!Number.isFinite(waitSeconds) || waitSeconds <= 0)) {
+    throw new Error('--wait must be a positive number of seconds');
+  }
   const runtime = new Runtime();
   await runtime.run(async () => {
     const commandSiteCreate = new CommandSiteCreate(
@@ -37,6 +47,6 @@ async function executeSiteCreate(deps: SiteCreateDependencies, siteName: string 
       deps.configLoader
     );
 
-    await commandSiteCreate.execute(siteName, region);
+    await commandSiteCreate.execute(siteName, region, waitSeconds);
   });
 }
