@@ -13,6 +13,7 @@ import { WsCommandGroupDependencies } from '@/cli/infra/commands/ws/index';
 import { PushCommandGroupDependencies } from '@/cli/infra/commands/push/index';
 import { ProjectCommandGroupDependencies } from '@/cli/infra/commands/project/index';
 import { BriefCommandGroupDependencies } from '@/cli/infra/commands/brief/index';
+import { KbCommandGroupDependencies } from '@/cli/infra/commands/kb/index';
 import { ApiCommandGroupDependencies } from '@/cli/infra/commands/api/index';
 import { DevCommandGroupDependencies } from '@/cli/infra/commands/dev/index';
 import { CloudCommandGroupDependencies } from '@/cli/infra/commands/cloud/index';
@@ -240,6 +241,19 @@ export class ProductionDependencyFactory implements DependencyFactory {
       event: {
         append: deps,
       },
+    };
+  }
+
+  createKbCommandGroupDependencies(): KbCommandGroupDependencies {
+    const deps = {
+      credentialsProvider: this.createCredentialsRepo(),
+      configLoader: ConfigLoaderFactory.Create(),
+      presenter: PresenterFactory.createKnowledgeBasePresenter(),
+    };
+
+    return {
+      search: deps,
+      fetch: deps,
     };
   }
 

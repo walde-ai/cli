@@ -13,6 +13,7 @@ import { createWsCommandGroup } from './ws/index';
 import { createPushCommandGroup } from './push/index';
 import { createProjectCommandGroup } from './project/index';
 import { createBriefCommandGroup } from './brief/index';
+import { createKbCommandGroup } from './kb/index';
 import { createApiCommandGroup } from './api/index';
 import { createDevCommandGroup } from './dev/index';
 import { createCloudCommandGroup } from './cloud/index';
@@ -47,6 +48,7 @@ export function createProgram(factory: DependencyFactory): Command {
   program.addCommand(withCommonOptions(createPushCommandGroup(factory.createPushCommandGroupDependencies())));
   program.addCommand(withCommonOptions(createProjectCommandGroup(factory.createProjectCommandGroupDependencies())));
   program.addCommand(withCommonOptions(createBriefCommandGroup(factory.createBriefCommandGroupDependencies())));
+  program.addCommand(withCommonOptions(createKbCommandGroup(factory.createKbCommandGroupDependencies())));
   program.addCommand(withCommonOptions(createApiCommandGroup(factory.createApiCommandGroupDependencies())));
   program.addCommand(withCommonOptions(createDevCommandGroup(factory.createDevCommandGroupDependencies())));
   program.addCommand(withCommonOptions(createCloudCommandGroup(factory.createCloudCommandGroupDependencies())));

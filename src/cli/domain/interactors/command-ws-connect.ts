@@ -76,7 +76,7 @@ export class CommandWsConnect {
     rl.on('line', async (input: string) => {
       const trimmed = input.trim();
       if (trimmed) {
-        await session.send('chat.send', { chatId, message: trimmed });
+        await session.send('chat.send', { chatId, message: trimmed, attachments: [], siteId: '' });
       }
       rl.prompt();
     });

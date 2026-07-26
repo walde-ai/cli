@@ -7,6 +7,7 @@ import { ICachePresenter } from '@/cli/domain/ports/presenters/i-cache-presenter
 import { IWorkspacePresenter } from '@/cli/domain/ports/presenters/i-workspace-presenter';
 import { IProjectPresenter } from '@/cli/domain/ports/presenters/i-project-presenter';
 import { IBriefPresenter } from '@/cli/domain/ports/presenters/i-brief-presenter';
+import { IKnowledgeBasePresenter } from '@/cli/domain/ports/presenters/i-knowledge-base-presenter';
 import { ICredentialsPresenterV1 } from '@/cli/domain/ports/presenters/i-credentials-presenter-v1';
 import { IFrontendManifestPresenter } from '@/cli/domain/ports/presenters/i-frontend-manifest-presenter';
 import { IFrontendContentPresenter } from '@/cli/domain/ports/presenters/i-frontend-content-presenter';
@@ -19,6 +20,7 @@ import { CachePresenterV1 } from './cache-presenter-v1';
 import { WorkspacePresenterV1 } from './workspace-presenter-v1';
 import { ProjectPresenterV1 } from './project-presenter-v1';
 import { BriefPresenterV1 } from './brief-presenter-v1';
+import { KnowledgeBasePresenterV1 } from './knowledge-base-presenter-v1';
 import { CredentialsPresenterV1 } from './credentials-presenter-v1';
 import { FrontendManifestPresenterV1 } from './frontend-manifest-presenter-v1';
 import { FrontendContentPresenterV1 } from './frontend-content-presenter-v1';
@@ -126,6 +128,16 @@ export class PresenterFactory {
     const config = DefaultPresenterConfig;
 
     return new BriefPresenterV1(spinner, prompt, config);
+  }
+
+  /**
+   * Create knowledge base presenter
+   */
+  public static createKnowledgeBasePresenter(): IKnowledgeBasePresenter {
+    const spinner = new DefaultSpinnerComponent();
+    const config = DefaultPresenterConfig;
+
+    return new KnowledgeBasePresenterV1(spinner, config);
   }
 
   /**
