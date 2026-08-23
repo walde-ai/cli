@@ -15,10 +15,11 @@ export function createKbFetchCommand(deps: KbFetchDependencies): Command {
   const command = new Command('fetch');
 
   command
-    .description("Fetch a whole object from the active project's knowledge base")
-    .argument('<path>', 'The S3 URI path of the object, as returned by `walde kb search`')
+    .description("Fetch a whole object from the active project's knowledge base by its object id")
+    .argument('<id>', 'The object identifier, as returned by `walde kb search`')
+    .option('--version <version>', 'Optional specific version of the object; omit to fetch the latest')
     .option('--project <projectId>', 'Project ID (defaults to the active workspace project)')
-    .action(async (path: string, options) => {
+    .action(async (id: string, options) => {
       const runtime = new Runtime();
       await runtime.run(async () => {
         const interactor = new CommandKbFetch(
@@ -27,8 +28,9 @@ export function createKbFetchCommand(deps: KbFetchDependencies): Command {
           deps.configLoader
         );
         await interactor.execute({
-          path,
-          projectId: options.project,
+          id,
+          ...(typeof options.version === 'string' ? { version: options.version } : {}),
+          ...(typeof options.project === 'string' ? { projectId: options.project } : {}),
         });
       });
     });

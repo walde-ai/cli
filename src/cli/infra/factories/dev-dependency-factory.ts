@@ -15,6 +15,7 @@ import { PushCommandGroupDependencies } from '@/cli/infra/commands/push/index';
 import { ProjectCommandGroupDependencies } from '@/cli/infra/commands/project/index';
 import { BriefCommandGroupDependencies } from '@/cli/infra/commands/brief/index';
 import { KbCommandGroupDependencies } from '@/cli/infra/commands/kb/index';
+import { FormatCommandGroupDependencies } from '@/cli/infra/commands/format/index';
 import { ApiCommandGroupDependencies } from '@/cli/infra/commands/api/index';
 import { DevCommandGroupDependencies } from '@/cli/infra/commands/dev/index';
 import { CloudCommandGroupDependencies } from '@/cli/infra/commands/cloud/index';
@@ -266,6 +267,21 @@ export class DevDependencyFactory implements DependencyFactory {
     return {
       search: deps,
       fetch: deps,
+    };
+  }
+
+  createFormatCommandGroupDependencies(): FormatCommandGroupDependencies {
+    const deps = {
+      credentialsProvider: this.createCredentialsProvider(),
+      configLoader: this.createConfigLoader(),
+      presenter: PresenterFactory.createFormatPresenter(),
+    };
+
+    return {
+      list: deps,
+      create: deps,
+      edit: deps,
+      delete: deps,
     };
   }
 

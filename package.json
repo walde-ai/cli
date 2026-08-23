@@ -1,6 +1,6 @@
 {
   "name": "@walde.ai/cli",
-  "version": "0.0.8",
+  "version": "0.3.0",
   "description": "Command Line Interface for Walde",
   "type": "module",
   "bin": {
@@ -18,7 +18,7 @@
     "@aws-sdk/client-cognito-identity-provider": "^3.0.0",
     "@aws-sdk/client-s3": "^3.0.0",
     "@aws-sdk/client-sns": "^3.0.0",
-    "@walde.ai/sdk": "0.0.8",
+    "@walde.ai/sdk": "0.3.0",
     "amazon-cognito-identity-js": "^6.3.12",
     "chalk": "^5.3.0",
     "cli-table3": "^0.6.3",
@@ -28,7 +28,7 @@
     "ora": "^8.1.0",
     "prompts": "^2.4.2",
     "ws": "^8.20.0",
-    "@walde.ai/ws-protocol": "0.0.8"
+    "@walde.ai/ws-protocol": "0.3.0"
   },
   "devDependencies": {
     "@types/inquirer": "^9.0.0",

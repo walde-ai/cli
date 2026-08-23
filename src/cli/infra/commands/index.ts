@@ -4,6 +4,7 @@ import { createCredentialsCommandGroup } from './credentials/index';
 import { createCurlCommandGroup } from './curl/index';
 import { createSiteCommandGroup } from './site/index';
 import { createContentCommandGroup } from './content/index';
+import { createFormatCommandGroup } from './format/index';
 import { createInitCommandGroup } from './init/index';
 import { createUiCommandGroup } from './ui/index';
 import { createFrontendCommandGroup } from './frontend/index';
@@ -39,6 +40,7 @@ export function createProgram(factory: DependencyFactory): Command {
   program.addCommand(withCommonOptions(createCurlCommandGroup(factory.createCurlCommandGroupDependencies())));
   program.addCommand(withCommonOptions(createSiteCommandGroup(factory.createSiteCommandGroupDependencies())));
   program.addCommand(withCommonOptions(createContentCommandGroup(factory.createContentCommandGroupDependencies())));
+  program.addCommand(withCommonOptions(createFormatCommandGroup(factory.createFormatCommandGroupDependencies())));
   program.addCommand(withCommonOptions(createInitCommandGroup(factory.createInitCommandGroupDependencies())));
   program.addCommand(withCommonOptions(createUiCommandGroup(factory.createUiCommandGroupDependencies())));
   program.addCommand(withCommonOptions(createFrontendCommandGroup(factory.createFrontendCommandGroupDependencies())));

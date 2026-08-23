@@ -3,15 +3,16 @@ import { IKnowledgeBasePresenter } from '@/cli/domain/ports/presenters/i-knowled
 import { ILoadConfig } from '@/cli/domain/ports/in/i-load-config';
 
 export interface FetchKnowledgeBaseObjectOptions {
-  path: string;
+  id: string;
+  version?: string;
   projectId?: string;
 }
 
 /**
  * Fetches the whole bytes of a single Knowledge Base object from the active
- * project's data bucket. Resolves the active project the same way the other
- * project-scoped commands do — from the `walde.json` workspace marker — unless
- * an explicit `--project` is supplied.
+ * project's data bucket, resolved by object identity. Resolves the active
+ * project the same way the other project-scoped commands do — from the
+ * `walde.json` workspace marker — unless an explicit `--project` is supplied.
  */
 export class CommandKbFetch {
   constructor(
@@ -50,7 +51,11 @@ export class CommandKbFetch {
     try {
       const result = await walde
         .knowledgeBase({ projectId })
-        .fetch({ path: options.path })
+        .fetch(
+          options.version !== undefined
+            ? { id: options.id, version: options.version }
+            : { id: options.id }
+        )
         .resolve();
 
       this.presenter.stopOperation();

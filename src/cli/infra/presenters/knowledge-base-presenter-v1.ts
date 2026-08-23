@@ -33,7 +33,6 @@ export class KnowledgeBasePresenterV1 implements IKnowledgeBasePresenter {
 
     matches.forEach((match, index) => {
       console.log(CliTheme.accent(`#${index + 1}  score ${match.score}`));
-      console.log(CliTheme.soft(`  path: ${match.path}`));
       console.log(
         CliTheme.soft(
           `  object: ${match.objectReference.name} ` +
@@ -48,6 +47,18 @@ export class KnowledgeBasePresenterV1 implements IKnowledgeBasePresenter {
 
   public presentFetchResult(result: KnowledgeBaseFetchResult): void {
     console.log(CliTheme.soft(`contentType: ${result.contentType}`));
+    if (result.downloadUrl !== undefined) {
+      // A chat-scoped fetch too large for an inline response: present the
+      // short-lived URL instead of the bytes.
+      console.log(CliTheme.soft(`downloadUrl: ${result.downloadUrl}`));
+      return;
+    }
+    if (result.encoding === undefined || result.content === undefined) {
+      // Unreachable for a CLI fetch (no chatId is ever sent, so the endpoint
+      // always answers inline) — kept explicit rather than printing
+      // `undefined`.
+      throw new Error('Fetch result carried neither inline content nor a downloadUrl');
+    }
     console.log(CliTheme.soft(`encoding: ${result.encoding}`));
     console.log(result.content);
   }

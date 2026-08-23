@@ -13,6 +13,7 @@ import { PushCommandGroupDependencies } from '@/cli/infra/commands/push/index';
 import { ProjectCommandGroupDependencies } from '@/cli/infra/commands/project/index';
 import { BriefCommandGroupDependencies } from '@/cli/infra/commands/brief/index';
 import { KbCommandGroupDependencies } from '@/cli/infra/commands/kb/index';
+import { FormatCommandGroupDependencies } from '@/cli/infra/commands/format/index';
 import { ApiCommandGroupDependencies } from '@/cli/infra/commands/api/index';
 import { DevCommandGroupDependencies } from '@/cli/infra/commands/dev/index';
 import { CloudCommandGroupDependencies } from '@/cli/infra/commands/cloud/index';
@@ -36,6 +37,7 @@ export interface DependencyFactory {
   createProjectCommandGroupDependencies(): ProjectCommandGroupDependencies;
   createBriefCommandGroupDependencies(): BriefCommandGroupDependencies;
   createKbCommandGroupDependencies(): KbCommandGroupDependencies;
+  createFormatCommandGroupDependencies(): FormatCommandGroupDependencies;
   createApiCommandGroupDependencies(): ApiCommandGroupDependencies;
   createDevCommandGroupDependencies(): DevCommandGroupDependencies;
   createCloudCommandGroupDependencies(): CloudCommandGroupDependencies;
